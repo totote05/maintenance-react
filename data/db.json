@@ -1,0 +1,60 @@
+{
+  "type": [
+    {"id:": 1, "name": "Cambio de aceite", "nextOn": 10000},
+    {"id:": 2, "name": "Rotación cubiertas", "nextOn": 10000}
+  ],
+  "maintenance": [
+    {
+      "id": 1,
+      "type": 2,
+      "odometer": 83868,
+      "date" : "2018-06-08 15:00:00",
+      "nextOn": 93868
+    },
+    {
+      "id": 1,
+      "type": 1,
+      "odometer": 85960,
+      "date" : "2018-08-17 12:00:00",
+      "nextOn": 95960
+    },
+    {
+      "id": 1,
+      "type": 1,
+      "odometer": 96300,
+      "date" : "2019-04-13 12:00:00",
+      "nextOn": 106300
+    },
+    {
+      "id": 1,
+      "type": 2,
+      "odometer": 97718,
+      "date" : "2019-05-22 15:00:00",
+      "nextOn": 107718
+    },
+    {
+      "id": 1,
+      "type": 1,
+      "odometer": 108880,
+      "date" : "2020-02-12 12:00:00",
+      "nextOn": 118880
+    },
+    {
+      "id": 1,
+      "type": 2,
+      "odometer": 112493,
+      "date" : "2020-09-07 15:00:00",
+      "nextOn": 122493
+    },
+    {
+      "id": 1,
+      "type": 1,
+      "odometer": 114400,
+      "date" : "2020-11-17 10:00:00",
+      "nextOn": 124400
+    }
+  ],
+  "odometer": [
+    { "date": "2021-03-29 11:26:00", "value": 118392}
+  ]
+}
