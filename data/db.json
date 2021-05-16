@@ -9,6 +9,11 @@
       "id": 2,
       "name": "Rotación cubiertas",
       "nextOn": 10000
+    },
+    {
+      "id": 3,
+      "name": "Cambio de correa",
+      "nextOn": "60000"
     }
   ],
   "maintenance": [
@@ -67,6 +72,11 @@
       "id": 1,
       "date": "2021-03-29 11:26:00",
       "value": 118392
+    },
+    {
+      "id": 2,
+      "value": "96569",
+      "date": "2021-04-07"
     }
   ]
 }
