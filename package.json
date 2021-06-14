@@ -3,9 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@chakra-ui/icons": "^1.0.13",
+    "@chakra-ui/react": "^1.6.1",
+    "@emotion/react": "11",
+    "@emotion/styled": "11",
+    "@mdi/js": "^5.9.55",
+    "@mdi/react": "^1.5.0",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
+    "framer-motion": "4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^5.2.0",
@@ -14,8 +21,8 @@
   },
   "scripts": {
     "start": "run-p start-app start-api",
-    "start-app": "cross-env REACT_APP_API_URL=http://localhost:3004 react-scripts start",
-    "start-api": "json-server --watch ./data/db.json --port 3004 --delay 0",
+    "start-app": "cross-env REACT_APP_API_URL=http://192.168.1.7:3004 react-scripts start",
+    "start-api": "json-server --watch ./data/db.json --host 192.168.1.7 --port 3004 --delay 0",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -1,20 +1,39 @@
 import { useEffect, useState } from "react"
+import {
+  VStack,
+  FormControl,
+  FormLabel,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
+  Stack,
+} from "@chakra-ui/react"
+import MdiIcon from "@mdi/react"
+import { mdiCounter, mdiCalendar, mdiWrench, mdiClock } from "@mdi/js"
 import { getTypes } from "../../services/types"
 import { formatDate, formatTime, getDateTimeValues } from "../../utils/date"
+import { inputOdometerHandler } from "../../utils/validators"
+import FormDialog from "../app/FormDialog"
 
 const FIELD_TYPE = 'type'
 const FIELD_ODOMETER = 'odometer'
 const FIELD_DATE = 'date'
 const FIELD_TIME = 'time'
 
-function MaintenanceForm ({ data, saveHandler, cancelHandler }) {
-  const [type, setType] = useState(data.type ?? '')
-  const [odometer, setOdometer] = useState(data.odometer ?? '')
-  const [date, setDate] = useState(getDateTimeValues(data.date).date 
-    ?? formatDate(new Date()))
-  const [time, setTime] = useState(getDateTimeValues(data.date).time 
-    ?? formatTime(new Date()))
-  const [nextOn, setNextOn] = useState(data.nextOn ?? '')
+export default function MaintenanceForm ({
+  data,
+  saving,
+  isOpen,
+  onClose,
+  saveHandler,
+  cancelHandler
+}) {
+  const [type, setType] = useState('')
+  const [odometer, setOdometer] = useState('')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [nextOn, setNextOn] = useState('')
   const [types, setTypes] = useState([])
 
   function inputHandler (e) {
@@ -24,7 +43,10 @@ function MaintenanceForm ({ data, saveHandler, cancelHandler }) {
         setType(types.find(t => t.id === id) ?? '')
         break
         case FIELD_ODOMETER: 
-        setOdometer(Number(e.target.value))
+        const value = e.target.value === '' 
+          ? e.target.value 
+          : Number(e.target.value)
+        setOdometer(value)
       break
       case FIELD_DATE: 
         setDate(e.target.value)
@@ -60,76 +82,156 @@ function MaintenanceForm ({ data, saveHandler, cancelHandler }) {
   }, [])
 
   useEffect(() => {
+    setType(data.type ?? '')
+    setOdometer(data.odometer ?? '')
+    setDate(getDateTimeValues(data.date).date 
+      ?? formatDate(new Date()))
+    setTime(getDateTimeValues(data.date).time 
+      ?? formatTime(new Date()))
+    setNextOn(data.nextOn ?? '')
+  }, [data])
+
+  useEffect(() => {
     const next = type.nextOn ?? 0
-    setNextOn(odometer + next)
+    setNextOn(Number(odometer) + Number(next))
   }, [odometer, type])
 
   return (
-    <div className="maintenance-form">
+    <FormDialog
+      title="Registro de mantenimiento realizado"
+      submitLabel="Guardar"
+      loadingText="Guardando..."
+      loading={saving}
+      isOpen={isOpen}
+      onClose={onClose}
+      onCancel={cancelHandler}
+      onSubmit={submitHandler}
+    >
 
-      <h3>Registrar un nuevo mantenimiento</h3>
+      <VStack>
 
-      <form>
+        <FormControl>
 
-        <fieldset>
-          <label>Tipo de mantenimiento</label>
-          <select
-            name={FIELD_TYPE}
-            value={type.id}
-            onChange={inputHandler}
-          >
-            <option value="-1">Seleccione un tipo de mantenimiento</option>
-            {types.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </fieldset>
+          <FormLabel>Tipo de mantenimiento</FormLabel>
 
-        <fieldset>
-          <label>Odómetro</label>
-          <input
-            type="number"
-            name={FIELD_ODOMETER}
-            value={odometer}
-            placeholder="0.0"
-            onChange={inputHandler}
-          />
-        </fieldset>
+          <InputGroup>
 
-        <fieldset>
-          <label>Fecha</label>
-          <input
-            type="date"
-            name={FIELD_DATE}
-            value={date}
-            placeholder="dd/mm/aaaa"
-            onChange={inputHandler}
-          />
-          <input
-            type="time"
-            name={FIELD_TIME}
-            value={time}
-            placeholder="HH:mm"
-            onChange={inputHandler}
-          />
-        </fieldset>
+            <InputLeftElement
+              pointerEvents="none"
+              children={<MdiIcon size={1} path={mdiWrench} />}
+            />
 
-        <fieldset>
-          <label>Próximo</label>
-          <input
-            disabled
-            type="number"
-            value={nextOn}
-            placeholder="0.0"
-          />
-        </fieldset>
+            <Select
+              name={FIELD_TYPE}
+              value={type.id}
+              onChange={inputHandler}
+            >
+              <option value="-1">Seleccione un tipo de mantenimiento</option>
+              {types.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </Select>
+          
+          </InputGroup>
 
-        <button type="button" onClick={cancelHandler}>Cancelar</button>
-        <button onClick={submitHandler}>Guardar</button>
+        </FormControl>
 
-      </form>
-    </div>
+        <FormControl>
+
+          <FormLabel>Kilometraje</FormLabel>
+
+          <InputGroup>
+          
+            <InputLeftElement
+              pointerEvents="none"
+              children={<MdiIcon size={1} path={mdiCounter} />}
+            />
+                
+            <Input
+              type="number"
+              name={FIELD_ODOMETER}
+              value={odometer}
+              placeholder="0"
+              min={1}
+              max={999999}
+              onChange={inputHandler}
+              onKeyPress={inputOdometerHandler}
+            />
+          
+          </InputGroup>
+
+        </FormControl>
+
+        <FormControl>
+
+          <FormLabel>Fecha</FormLabel>
+
+          <Stack direction={['column', 'row']}>
+
+            <InputGroup>
+
+              <InputLeftElement
+                pointerEvents="none"
+                children={<MdiIcon size={1} path={mdiCalendar} />}
+              />
+
+              <Input
+                type="date"
+                name={FIELD_DATE}
+                value={date}
+                placeholder="dd/mm/aaaa"
+                onChange={inputHandler}
+                onKeyPress={(e) => { e.preventDefault() }}
+                />
+
+            </InputGroup>
+
+            <InputGroup>
+
+              <InputLeftElement
+                pointerEvents="none"
+                children={<MdiIcon size={1} path={mdiClock} />}
+              />
+
+              <Input
+                type="time"
+                name={FIELD_TIME}
+                value={time}
+                placeholder="HH:mm"
+                onChange={inputHandler}
+                onKeyPress={(e) => { e.preventDefault() }}
+              />
+
+            </InputGroup>
+
+          </Stack>
+
+        </FormControl>
+
+        <FormControl>
+
+          <FormLabel>Próximo</FormLabel>
+
+          <InputGroup>
+
+            <InputLeftElement
+              pointerEvents="none"
+              children={<MdiIcon size={1} path={mdiCounter} />}
+            />
+
+            <Input
+              disabled
+              type="number"
+              value={nextOn}
+              placeholder="0.0"
+            />
+
+          </InputGroup>
+
+        </FormControl>
+
+      </VStack>
+
+    </FormDialog>
   )
 }
-
-export default MaintenanceForm

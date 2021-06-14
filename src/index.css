@@ -6,3 +6,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.chakra-select, .chakra-numberinput__field {
+  padding-left: 40px !important;
+}
+
+.chakra-numberinput {
+  flex-grow: 1;
+}

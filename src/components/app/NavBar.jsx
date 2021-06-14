@@ -1,16 +1,29 @@
-import { Link } from "react-router-dom";
+import { Image } from "@chakra-ui/image";
+import { Flex, Spacer } from "@chakra-ui/layout";
+import { useBreakpoint } from "@chakra-ui/media-query";
+import NavButton from "./NavButton";
+import MainMenu from './MainMenu'
 
-function NavBar () {
+export default function NavBar () {
   return (
-    <nav className="navbar">
-      <h1>Mantenimientos</h1>
-      <div className="menu">
-        <Link to="/">Mantenimientos</Link>
-        <Link to="/type">Tipos de mantenimientos</Link>
-        <Link to="/odometer">Odómetros registrados</Link>
-      </div>
-    </nav>
+    <Flex px="8" py="4" alignItems="center">
+
+      { useBreakpoint() === 'base' && <MainMenu /> }
+
+      <Image src="/img/brand.svg"/>
+      
+      { useBreakpoint() !== 'base' &&  <>
+
+        <Spacer />
+      
+        <NavButton to="/">Realizados</NavButton>
+        
+        <NavButton to="/type">Tipos</NavButton>
+        
+        <NavButton to="/odometer">Kilometrajes</NavButton>
+
+      </> }
+        
+    </Flex>
   )
 }
-
-export default NavBar

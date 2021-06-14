@@ -1,66 +1,172 @@
 import { useEffect, useState } from "react"
+import {
+  Box,
+  IconButton,
+  useDisclosure,
+  useToast
+} from "@chakra-ui/react"
+import MdiIcon from '@mdi/react'
+import { mdiWrench } from '@mdi/js'
 import MaintenanceForm from "../components/maintenance/MaintenanceForm"
 import MaintenaceList from "../components/maintenance/MaintenanceList"
-import { deleteMaintenance, getMaintenances, saveMaintenance } from "../services/maintenaces"
+import {
+  deleteMaintenance,
+  getMaintenances,
+  saveMaintenance
+} from "../services/maintenaces"
+import PageHeading from "../components/app/PageHeading"
+import DeleteDialog from "../components/app/DeleteDialog"
+import { getLastRegistered as getLastOdometerRegistered } from "../services/odometers"
+import LastOdometerRegistered from "../components/odometer/LastOdometerRegistered"
 
-function Maintenance () {
+export default function Maintenance () {
+  const toast = useToast()
   const [maintenances, setMaintenances] = useState([])
   const [maintenance, setMaintenance] = useState({})
-  const [formVisible, setFormVisible] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [lastOdometer, setLastOdometer] = useState({})
+  const {
+    isOpen: isFormOpen,
+    onOpen: onFormOpen,
+    onClose: onFormClose
+  } = useDisclosure()
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose
+  } = useDisclosure()
 
-  function showDialogHandler (item = {}) {
+  function showFormDialogHandler (item = {}) {
     setMaintenance(item)
-    setFormVisible(true)
+    onFormOpen()
   }
 
-  async function deleteHandler (data) {
-    if (window.confirm(`¿Está seguro de querer eliminar el mantenimiento "${data.type.name} - ${data.odometer}"?`)) {
-      await deleteMaintenance(data.id)
+  function showDeleteDialogHandler (item = {}) {
+    setMaintenance(item)
+    onDeleteOpen()
+  }
+
+  async function onDeleteHandler () {
+    setDeleting(true)
+
+    try {
+      await deleteMaintenance(maintenance.id)
+      onDeleteClose()
       loadMaintenances()
+    } catch (e) {
+      toast({
+        title: "Error al eliminar.",
+        description: "No se pudo eliminar el mantenimiento realizado.",
+        status: "error",
+        isClosable: true,
+      })
+    } finally {
+      setDeleting(false)
     }
   }
 
   async function saveHandler (data) {
-    await saveMaintenance(data)
-    setFormVisible(false)
-    loadMaintenances()
+    setSaving(true)
+
+    try {
+      await saveMaintenance(data)
+      onFormClose()
+      loadMaintenances()
+    } catch (e) {
+      toast({
+        title: "Error al guardar.",
+        description: "No se pudo guardar el mantenimiento.",
+        status: "error",
+        isClosable: true,
+      })
+    } finally{
+      setSaving(false)
+    }
   }
 
-  function cancelHandler () {
-    setFormVisible(false)
+  function cancelFormHandler () {
+    onFormClose()
+  }
+
+  function cancelDeleteHandler () {
+    onDeleteClose()
   }
 
   async function loadMaintenances () {
-    const maintenances = await getMaintenances()
-    setMaintenances(maintenances.reverse())
+    setLoading(true)
+
+    try {
+      setMaintenances(await getMaintenances())
+    } catch (e) {
+      toast({
+        title: "Error al cargar.",
+        description: "No se pudieron cargar los mantenimientos realizados.",
+        status: "error",
+        isClosable: true,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function refreshData () {
+    loadMaintenances()
+    getLastOdometerRegistered().then(last => {
+      setLastOdometer(last)
+    })
   }
 
   useEffect(() => {
-    loadMaintenances()
+    refreshData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-  <div className="maintenances">
+  <Box>
 
-    <h3>Mantenimientos registrados</h3>
+    <PageHeading title="Mantenimientos realizados">
+      <IconButton
+        aria-label="Registrar mantenimiento realizado"
+        colorScheme="green"
+        icon={<MdiIcon path={mdiWrench} size={1} />}
+        onClick={() => { showFormDialogHandler() }}
+      />
+    </PageHeading>
     
-    <button onClick={() => { showDialogHandler() }}>Registrar nuevo</button>
-    
-    {formVisible && 
-      <MaintenanceForm
-        data={maintenance}
-        saveHandler={saveHandler}
-        cancelHandler={cancelHandler}
-      ></MaintenanceForm>}
+    <MaintenanceForm
+      data={maintenance}
+      saving={saving}
+      isOpen={isFormOpen}
+      onClose={onFormClose}
+      saveHandler={saveHandler}
+      cancelHandler={cancelFormHandler}
+    ></MaintenanceForm>
 
-    { maintenances && 
-      <MaintenaceList
-        list={maintenances}
-        editMaintenance={showDialogHandler}
-        deleteMaintenance={deleteHandler}
-    ></MaintenaceList> }
-  </div>
+    <DeleteDialog
+      title="Eliminar mantenimiento realizado"
+      deleting={deleting}
+      isOpen={isDeleteOpen}
+      onClose={onDeleteClose}
+      onDelete={onDeleteHandler}
+      onCancel={cancelDeleteHandler}
+    >
+      {`¿Está seguro de querer eliminar el mantenimiento "${maintenance.type?.name} - ${maintenance.odometer}"?`}
+    </DeleteDialog>
+
+    { !loading && <LastOdometerRegistered
+      odometer={lastOdometer}
+      onSave={refreshData}
+    /> }
+
+    <MaintenaceList
+      loading={loading}
+      list={maintenances}
+      lastOdometer={lastOdometer?.value}
+      editMaintenance={showFormDialogHandler}
+      deleteMaintenance={showDeleteDialogHandler}
+    ></MaintenaceList>
+  </Box>
   )
 }
-
-export default Maintenance
